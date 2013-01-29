@@ -54,7 +54,7 @@ module GitoliteRedmine
     def clone(origin, local_dir)
       FileUtils.mkdir_p local_dir
       result = `git clone #{origin} #{local_dir}`
-      logger.debug result
+      logger.debug "[Gitolite] clone #{result}"
       @repo = Gitolite::GitoliteAdmin.new local_dir
     end
     
@@ -77,14 +77,19 @@ module GitoliteRedmine
       users = project.member_principals.map(&:user).compact.uniq
       
       name = project.identifier.to_s
-      conf = @repo.config.repos[name]
+      # Handle multiple repos of a project
+      project.repositories.each do |rep|
+        name =  project.repositories.count == 1 ? name : name+'--'+rep.identifier.to_s
+        conf = @repo.config.repos[name]
+        logger.debug "[Gitolite] handle_project name=#{name} and conf=#{conf.inspect}"
       
-      unless conf
-        conf = Gitolite::Config::Repo.new(name)
-        @repo.config.add_repo(conf)
+        unless conf
+          conf = Gitolite::Config::Repo.new(name)
+          @repo.config.add_repo(conf)
+        end
+        
+        conf.permissions = build_permissions(users, project)
       end
-      
-      conf.permissions = build_permissions(users, project)
     end
     
     def add_active_keys(keys) 
@@ -126,7 +131,7 @@ module GitoliteRedmine
       permissions = {}
       permissions["RW+"] = {"" => write} unless write.empty?
       permissions["R"] = {"" => read} unless read.empty?
-      
+      logger.debug "[Gitolite] build_permissions permissions=#{permissions.inspect}" 
       [permissions]
     end
     
