@@ -76,10 +76,9 @@ module GitoliteRedmine
     def handle_project(project)
       users = project.member_principals.map(&:user).compact.uniq
       
-      name = project.identifier.to_s
       # Handle multiple repos of a project
       project.repositories.each do |rep|
-        name =  project.repositories.count == 1 ? name : name+'--'+rep.identifier.to_s
+        name = File.basename(rep.url)[0..-5]   
         conf = @repo.config.repos[name]
         logger.debug "[Gitolite] handle_project name=#{name} and conf=#{conf.inspect}"
       
