@@ -24,7 +24,7 @@ Redmine::Plugin.register :redmine_gitolite do
       'developerBaseUrls' => "git@example.com:%{name}.git",
       'readOnlyBaseUrls' => 'http://example.com/git/%{name}',
       'basePath' => '/home/redmine/repositories/',
-	}
+    }
   })
 end
 

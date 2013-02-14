@@ -41,7 +41,9 @@ module GitoliteRedmine
       def git_parametrize
         params[:repository] ||= {}
         params[:repository][:extra_report_last_commit] = '1'
-        params[:repository][:url] = File.join(Setting.plugin_redmine_gitolite['basePath'],@project.identifier+".git") if  params[:repository_scm] == 'Git'
+        repository_identifier = params[:id].nil? ? params[:repository][:identifier] : Repository.find(params[:id]).identifier
+        identifier = @project.repositories.count > 0 ? @project.identifier.to_s+"--"+repository_identifier : @project.identifier
+        params[:repository][:url] = File.join(Setting.plugin_redmine_gitolite['basePath'],identifier+".git") if  params[:repository_scm] == 'Git'
       end
 
     end

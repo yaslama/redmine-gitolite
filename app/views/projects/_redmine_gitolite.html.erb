@@ -1,26 +1,20 @@
 <% if @project.repository && @project.repository.is_a?(Repository::Git) %>
 <div class="box">
-	<h3>Git Repository</h3>
-  <p>
-    <% baseUrlStr = Setting.plugin_redmine_gitolite['readOnlyBaseUrls'] -%>
-    <% if !baseUrlStr.empty? && User.current.allowed_to?(:view_changesets, @project)  %>
-      <strong>Read Only URL:</strong><br />
-      <ul>
-        <% baseUrlStr.lines.each do |url| %>
-          <% result = url.gsub("%{name}", @project.identifier) -%>
-          <li><%= link_to result, result %></li>
-        <% end %>
-      </ul>
-    <% end %>
-	</p>
-  <p>
+	<h3>Git Repositories</h3>
+    <p>
     <% baseUrlStr = Setting.plugin_redmine_gitolite['developerBaseUrls'] %>
     <% if !baseUrlStr.empty? && User.current.allowed_to?(:commit_access, @project) %>
-    <strong>Developer URL:</strong><br />
+    <strong>Developer URL(s):</strong><br />
     <ul>
-      <% baseUrlStr.lines.each do |url| %>
-        <% result = url.gsub("%{name}", @project.identifier) -%>
-        <li><%= link_to result, result %></li>
+      <% @project.repositories.each do |repo| %>
+        <% if repo.is_a? Repository::Git %>
+          <% name = File.basename(repo.url)[0..-5] %>
+          <% user = repo.url=~/.*\/gitosis\/.*/ ? 'gitosis' : 'git' %>
+          <% baseUrlStr.lines.each do |url| %>
+            <% result = url.gsub("%{name}", name).gsub("%{user}", user) -%>
+            <li><%= link_to result, result %></li>
+          <% end %>
+        <% end %>
       <% end %>
     </ul>
     <% end %>
